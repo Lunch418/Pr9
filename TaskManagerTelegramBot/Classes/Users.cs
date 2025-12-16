@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagerTelegramBot.Classes
 {
-     public class Users
+    public class User
     {
+        [Key]
+        public long Id { get; set; }
+        public string? Username { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public long IdUser { get; set; }
-        public List<Events> Events { get; set; }
-        public Users(long idUser)
-        {
-            IdUser = idUser;
-            Events = new List<Events>();
-        }
+        public virtual ICollection<Event> Events { get; set; } = new List<Event>();
+        public virtual ICollection<RepeatEvent> RepeatEvents { get; set; } = new List<RepeatEvent>();
     }
 }
