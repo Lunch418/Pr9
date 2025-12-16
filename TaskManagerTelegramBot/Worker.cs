@@ -15,7 +15,7 @@ namespace TaskManagerTelegramBot
         List<string> Messages = new List<string>()
 {
     "Здравствуйте! 👋\n" +
-    "Рады приветствовать вас в Telegram-боте «Напоминатор»! 😊\n" +
+    "Рады приветствовать вас в Telegram-боте «Напоминалка»! 😊\n" +
     "Наш бот создан для того, чтобы напоминать вам о важных событиях и мероприятиях. " +
     "С ним вы точно не пропустите ничего важного! 💬\n" +
     "Не забудьте добавить бота в список своих контактов и настроить уведомления. " +
@@ -37,7 +37,7 @@ namespace TaskManagerTelegramBot
     "Все события удалены."
 };
 
-    public bool CheckFormatDateTime(string value, out DateTime time)
+        public bool CheckFormatDateTime(string value, out DateTime time)
         {
             return DateTime.TryParse(value, out time);
         }
@@ -95,6 +95,55 @@ namespace TaskManagerTelegramBot
                         );
                     }
                 }
+            }
+
+        }
+        private void GetMessages(Message message)
+        {
+            Console.WriteLine("Получено сообщение: " + message.Text + " от пользователя: " + message.Chat.Username);
+            long IdUser = message.Chat.Id;
+            string MessageUser = message.Text;
+
+            if (message.Text.Contains("/")) Command(message.Chat.Id, message.Text);
+            else if (message.Text.Equals("Удалить все задачи"))
+            {
+                Users User = Users.Find(x => x.IdUser == message.Chat.Id);
+                if (User == null) SendMessage(message.Chat.Id, 4);
+                else if (User.Events.Count == 0) SendMessage(User.IdUser, 4);
+                else
+                {
+                    User.Events = new List<Events>();
+                    SendMessage(User.IdUser, 6);
+                }
+            }
+            else
+            {
+                Users User = Users.Find(x => x.IdUser == message.Chat.Id);
+                if (User == null)
+                {
+                    User = new Users(message.Chat.Id);
+                    Users.Add(User);
+                }
+
+                string[] Info = message.Text.Split('\n');
+                if (Info.Length < 2)
+                {
+                    SendMessage(message.Chat.Id, 2);
+                    return;
+                }
+
+                DateTime Time;
+                if (CheckFormatDateTime(Info[0], out Time) == false)
+                {
+                    SendMessage(message.Chat.Id, 2);
+                    return;
+                }
+
+                if (Time < DateTime.Now) SendMessage(message.Chat.Id, 3);
+
+                User.Events.Add(new Events(
+                    Time,
+                    message.Text.Replace(Time.ToString("HH:mm dd.MM.yyyy") + "\n", "")));
             }
         }
     }
