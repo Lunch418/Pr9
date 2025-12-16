@@ -1,24 +1,62 @@
+﻿using TaskManagerTelegramBot.Classes;
+using Telegram.Bot;
+using Telegram.Bot.Types.ReplyMarkups;
+
 namespace TaskManagerTelegramBot
 {
     public class Worker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        readonly string Token = "полученный телеграм токен";
+        TelegramBotClient TelegramBotClient;
+        List<Users> Users = new List<Users>();
+        Timer Timer;
+        List<string> Messages = new List<string>()
+{
+    "Здравствуйте! 👋\n" +
+    "Рады приветствовать вас в Telegram-боте «Напоминатор»! 😊\n" +
+    "Наш бот создан для того, чтобы напоминать вам о важных событиях и мероприятиях. " +
+    "С ним вы точно не пропустите ничего важного! 💬\n" +
+    "Не забудьте добавить бота в список своих контактов и настроить уведомления. " +
+    "Тогда вы всегда будете в курсе событий! 😊",
 
-        public Worker(ILogger<Worker> logger)
+    "Укажите дату и время напоминания в следующем формате:\n" +
+    "<i><b>12:51 26.01.2025</b>\n" +
+    "Напомни о том, что я хотел сходить в магазин.</i>",
+
+    "Кажется, что-то не получилось.\n" +
+    "Укажите дату и время напоминания в следующем формате:\n" +
+    "<i><b>12:51 26.01.2025</b>\n" +
+    "Напомни о том, что я хотел сходить в магазин.</i>",
+
+    "Задачи пользователя не найдены.",
+
+    "Событие удалено.",
+
+    "Все события удалены."
+};
+
+    public bool CheckFormatDateTime(string value, out DateTime time)
         {
-            _logger = logger;
+            return DateTime.TryParse(value, out time);
         }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        private static ReplyKeyboardMarkup GetButtons()
         {
-            while (!stoppingToken.IsCancellationRequested)
+            List<KeyboardButton> keyboardButtons = new List<KeyboardButton>();
+            keyboardButtons.Add(new KeyboardButton("Удалить все задачи"));
+
+            return new ReplyKeyboardMarkup
             {
-                if (_logger.IsEnabled(LogLevel.Information))
+                Keyboard = new List<List<KeyboardButton>>
                 {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                    keyboardButtons
                 }
-                await Task.Delay(1000, stoppingToken);
-            }
+            };
+        }
+        public static InlineKeyboardMarkup DeleteEvent(string Message)
+        {
+            List<InlineKeyboardButton> inlineKeyboards = new List<InlineKeyboardButton>();
+            inlineKeyboards.Add(new InlineKeyboardButton("Удалить", Message));
+            return new InlineKeyboardMarkup(inlineKeyboards);
         }
     }
 }
